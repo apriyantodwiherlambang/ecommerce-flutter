@@ -34,6 +34,7 @@ dependencies:
   flutter_bloc: ^8.1.3
   http: ^0.13.6
   get_it: ^7.6.4
+  flutter_secure_storage: ^9.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -62,6 +63,18 @@ flutter:
 
   assets:
     - .env
+    - assets/shoes.png
+    - assets/hamburger.png
+    - assets/home.png
+    - assets/profile.png
+    - assets/whislist.png
+    - assets/cart.png
+    - assets/bag2.png
+    - assets/highlight_tokas.png
+    - assets/google_icon.png
+    - assets/arrowleft.png
+    - assets/berhasil.png
+    - assets/profile-user.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

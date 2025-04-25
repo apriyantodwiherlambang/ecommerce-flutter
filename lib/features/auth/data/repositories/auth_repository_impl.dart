@@ -20,4 +20,12 @@ class AuthRepositoryImpl implements AuthRepository {
         await remoteDatasource.register(username, email, password);
     return userModel.toEntity();
   }
+
+  @override
+  Future<UserEntity> updateUser(int id, String username, String email,
+      String? password, String jwt) async {
+    final userModel =
+        await remoteDatasource.updateUser(id, username, email, password, jwt);
+    return userModel.toEntity();
+  }
 }
