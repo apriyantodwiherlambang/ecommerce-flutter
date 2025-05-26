@@ -3,14 +3,22 @@ class UserEntity {
   final String username;
   final String email;
   final String? profilePictureUrl;
-  final String jwt;
+  final String? jwt;
+  final String? refreshToken;
+  final String? role;
+  final String? address; // tambahkan ini
+  final String? phoneNumber; // tambahkan ini
 
   UserEntity({
     required this.id,
     required this.username,
     required this.email,
     this.profilePictureUrl,
-    required this.jwt,
+    this.jwt,
+    this.refreshToken,
+    this.role,
+    this.address, // baru
+    this.phoneNumber, // baru
   });
 
   factory UserEntity.fromJson(Map<String, dynamic> json) {
@@ -19,7 +27,11 @@ class UserEntity {
       username: json['username'],
       email: json['email'],
       profilePictureUrl: json['profilePictureUrl'],
-      jwt: json['jwt'],
+      jwt: json['accessToken'],
+      refreshToken: json['refreshToken'],
+      role: json['role'],
+      address: json['address'], // baru
+      phoneNumber: json['phoneNumber'], // baru
     );
   }
 
@@ -30,6 +42,10 @@ class UserEntity {
       'email': email,
       'profilePictureUrl': profilePictureUrl,
       'jwt': jwt,
+      'refreshToken': refreshToken,
+      'role': role,
+      'address': address, // baru
+      'phoneNumber': phoneNumber, // baru
     };
   }
 }

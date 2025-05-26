@@ -1,33 +1,70 @@
-import 'package:get_it/get_it.dart';
-import 'package:http/http.dart' as http;
+// injection_container.dart
 
-import 'features/auth/data/datasources/auth_remote_datasource.dart';
-import 'features/auth/data/repositories/auth_repository_impl.dart';
-import 'features/auth/domain/repositories/auth_repository.dart';
-import 'features/auth/domain/usecases/login_usecase.dart';
-import 'features/auth/domain/usecases/register_usecase.dart';
-import 'features/auth/domain/usecases/update_user_usecase.dart';
-import 'features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:frontend_ecommerce/features/auth/data/api_service.dart';
+import 'package:frontend_ecommerce/features/cart/cart_cubit.dart';
+import 'package:frontend_ecommerce/features/categories/category_injection.dart';
+import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'features/auth/auth_injection.dart';
+import 'features/products/product_injection.dart';
+
+// Import cart injection
+import 'features/cart/cart_injection.dart';
 
 final sl = GetIt.instance;
 
-void initAuth() {
-  // UseCases
-  sl.registerLazySingleton(() => LoginUseCase(sl()));
-  sl.registerLazySingleton(() => RegisterUseCase(sl()));
-  sl.registerLazySingleton(() => UpdateUserUseCase(sl()));
+Future<void> initCoreDependencies() async {
+  if (!sl.isRegistered<Dio>()) {
+    final baseUrl = dotenv.env['BASE_URL'] ?? '';
+    print('Base URL di Core: $baseUrl');
 
-  // Repository
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
+    final dio = Dio(BaseOptions(
+      baseUrl: baseUrl,
+      headers: {'Content-Type': 'application/json'},
+    ));
 
-  // Datasources
-  sl.registerLazySingleton<AuthRemoteDatasource>(() => AuthRemoteDatasourceImpl(
-      sl())); // Ensure this is the correct implementation
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          print("Request: ${options.method} ${options.uri}");
+          return handler.next(options);
+        },
+        onResponse: (response, handler) {
+          print("Response: ${response.statusCode} ${response.data}");
+          return handler.next(response);
+        },
+        onError: (DioError e, handler) {
+          print("Error: ${e.message}");
+          return handler.next(e);
+        },
+      ),
+    );
 
-  // External
-  sl.registerLazySingleton(() => http.Client());
+    sl.registerLazySingleton<Dio>(() => dio);
+    sl.registerLazySingleton<ApiService>(() => ApiService(baseUrl));
+  }
+}
 
-  // Cubit
-  sl.registerFactory(() => AuthCubit(
-      loginUseCase: sl(), registerUseCase: sl(), updateUserUseCase: sl()));
+Future<void> initDependencies() async {
+  print('Init dependencies dimulai');
+
+  await initCoreDependencies(); // Pastikan Dio dan ApiService sudah terdaftar
+
+  initAuth();
+  print('Auth injection done');
+
+  initProductInjection();
+  print('Product injection done');
+
+  initCategoryInjection();
+  print('Category injection done');
+
+  // Panggil setup cart injection di sini
+  setupCartInjection();
+  print('Cart injection done');
+
+  print('CartCubit registered: ${sl.isRegistered<CartCubit>()}'); // <- tambahan
+  // Inisialisasi modul lain jika ada
 }

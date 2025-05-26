@@ -16,10 +16,29 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool obscurePassword = true;
+  final FocusNode emailFocusNode = FocusNode();
+  final FocusNode passwordFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    emailFocusNode.dispose();
+    passwordFocusNode.dispose();
+    super.dispose();
+  }
 
   void _login() {
-    final email = emailController.text;
+    final email = emailController.text.trim();
     final password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Email dan password tidak boleh kosong")),
+      );
+      return;
+    }
+
     context.read<AuthCubit>().login(email, password);
   }
 
@@ -27,34 +46,43 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
+            final errorMessage =
+                state.message ?? 'Terjadi kesalahan, coba lagi!';
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+              SnackBar(content: Text(errorMessage)),
             );
           } else if (state is AuthSuccess) {
+            final role = context.read<AuthCubit>().currentUser?.role ?? '';
+            print("Role: $role");
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
-            Navigator.pushReplacementNamed(context, '/main');
+
+            if (role.toLowerCase() == 'admin') {
+              Navigator.pushReplacementNamed(context, '/admin-dashboard');
+            } else {
+              Navigator.pushReplacementNamed(context, '/main');
+            }
           }
         },
         builder: (context, state) {
           return SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Baris atas: ArrowLeft dan TOKAS sejajar
+                  // Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
+                        onTap: () => Navigator.pop(context),
                         child: Image.asset(
                           'assets/arrowleft.png',
                           height: 24,
@@ -67,11 +95,10 @@ class _LoginPageState extends State<LoginPage> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(width: 24), // Spacer
+                      const SizedBox(width: 24),
                     ],
                   ),
                   const SizedBox(height: 24),
-
                   const Center(
                     child: Text(
                       'Selamat Datang Kembali!',
@@ -92,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Tab login/daftar dengan navigasi
+                  // Tab
                   Row(
                     children: [
                       Expanded(
@@ -113,14 +140,11 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const RegisterPage(),
-                              ),
-                            );
-                          },
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const RegisterPage()),
+                          ),
                           child: Column(
                             children: const [
                               Text(
@@ -139,9 +163,9 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
 
+                  // Email
                   const Text(
                     'Email',
                     style: TextStyle(
@@ -152,16 +176,18 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 6),
                   TextField(
                     controller: emailController,
+                    focusNode: emailFocusNode,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      labelText: '',
+                      hintText: 'Masukkan email',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 16),
 
+                  // Password
                   const Text(
                     'Password',
                     style: TextStyle(
@@ -172,9 +198,10 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 6),
                   TextField(
                     controller: passwordController,
+                    focusNode: passwordFocusNode,
                     obscureText: obscurePassword,
                     decoration: InputDecoration(
-                      labelText: '',
+                      hintText: 'Masukkan password',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -190,20 +217,18 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 8),
+
+                  // Lupa password
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      const Text(''),
                       TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const ForgotPasswordPage()),
-                          );
-                        },
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ForgotPasswordPage()),
+                        ),
                         child: const Text(
                           'Lupa password?',
                           style: TextStyle(color: Color(0xFF0D6EFD)),
@@ -213,28 +238,35 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 12),
 
+                  // Tombol Masuk
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: _login,
+                      onPressed: state is AuthLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0D6EFD),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
-                        'Masuk',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
+                      child: state is AuthLoading
+                          ? const CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            )
+                          : const Text(
+                              'Masuk',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
-
                   const SizedBox(height: 16),
+
+                  // Divider
                   Row(
                     children: const [
                       Expanded(child: Divider()),
@@ -247,42 +279,38 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 16),
 
+                  // Google Login (nonaktif)
                   SizedBox(
                     width: double.infinity,
-                    child: MouseRegion(
-                      onEnter: (_) {},
-                      onExit: (_) {},
-                      child: OutlinedButton.icon(
-                        onPressed: null, // Menonaktifkan tombol
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          side: const BorderSide(color: Colors.grey),
+                    child: OutlinedButton.icon(
+                      onPressed: null,
+                      icon: Image.asset('assets/google_icon.png', height: 27),
+                      label: const Text(
+                        'Masuk dengan Google',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        icon: Image.asset('assets/google_icon.png', height: 27),
-                        label: const Text(
-                          'Masuk dengan Google',
-                          style: TextStyle(color: Colors.black),
-                        ),
+                        side: const BorderSide(color: Colors.grey),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 24),
+
+                  // Daftar jika belum punya akun
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text('Kamu tidak memiliki akun? '),
                       GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const RegisterPage()),
-                          );
-                        },
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const RegisterPage()),
+                        ),
                         child: const Text(
                           'Daftar',
                           style: TextStyle(
@@ -292,7 +320,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),

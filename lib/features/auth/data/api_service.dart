@@ -51,7 +51,7 @@ class ApiService {
   // Login
   Future<UserEntity> login(String email, String password) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/login'),
+      Uri.parse('$baseUrl/users/login'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'email': email, 'password': password}),
     );
@@ -73,7 +73,7 @@ class ApiService {
   Future<UserEntity> register(
       String username, String email, String password) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/register'),
+      Uri.parse('$baseUrl/users/register'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'username': username,
@@ -143,5 +143,10 @@ class ApiService {
     } else {
       throw Exception('Failed to update user: ${response.body}');
     }
+  }
+
+  Future<void> logout() async {
+    await deleteJwt();
+    print('Logout: JWT dihapus');
   }
 }

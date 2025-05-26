@@ -1,28 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend_ecommerce/features/auth/presentation/pages/cart_page.dart';
+import 'package:frontend_ecommerce/features/cart/cart_cubit.dart';
+import '../../../cart/cart_model.dart' as model;
 
 class ProductDetailPage extends StatelessWidget {
-  const ProductDetailPage({super.key});
+  final dynamic product;
+
+  const ProductDetailPage({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = product.imageUrl ?? '';
+    final name = product.name ?? 'No Name';
+    final description =
+        product.description ?? 'Deskripsi produk tidak tersedia.';
+    final category = product.category?.name ?? 'Kategori tidak tersedia';
+    final priceValue = product.price?.toInt() ?? 0;
+    final price = "Rp ${priceValue.toString()}";
+
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
         centerTitle: true,
-        title: const Text(
-          'Jaket Second',
-          style: TextStyle(color: Colors.black),
-        ),
+        title: Text(name, style: const TextStyle(color: Colors.black)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.favorite_border), onPressed: () {}),
           Stack(
             children: [
               IconButton(
                 icon: const Icon(Icons.shopping_bag_outlined),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CartScreen()),
+                  );
+                },
               ),
               Positioned(
                 right: 8,
@@ -33,12 +46,22 @@ class ProductDetailPage extends StatelessWidget {
                     color: Colors.red,
                     shape: BoxShape.circle,
                   ),
-                  child: const Text(
-                    '1',
-                    style: TextStyle(fontSize: 10, color: Colors.white),
+                  child: BlocBuilder<CartCubit, CartState>(
+                    builder: (context, state) {
+                      if (state is CartLoaded) {
+                        final items = state.items;
+                        if (items.isEmpty) return const SizedBox.shrink();
+                        return Text(
+                          '${items.length}',
+                          style: const TextStyle(
+                              fontSize: 10, color: Colors.white),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
                   ),
                 ),
-              )
+              ),
             ],
           )
         ],
@@ -47,70 +70,63 @@ class ProductDetailPage extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Jaket National Geographic\nsecond hand.',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Jaket Pria',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Rp. 300.000',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: Image.asset(
-                'assets/shoes.png', // pastikan file ini ada di folder assets
-                height: 250,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(
+            "$name\n$description",
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(category, style: const TextStyle(color: Colors.grey)),
+          const SizedBox(height: 8),
+          Text(price,
+              style:
+                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          Center(
+            child: imageUrl.isNotEmpty
+                ? Image.network(
+                    imageUrl,
+                    height: 250,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.broken_image, size: 100),
+                  )
+                : const Icon(Icons.image_not_supported, size: 100),
+          ),
+          const SizedBox(height: 16),
+          Text(description, style: const TextStyle(color: Colors.grey)),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(onPressed: () {}, child: const Text("Read More")),
+          ),
+          const SizedBox(height: 16),
+          Row(children: [
+            IconButton(
+                onPressed: () {}, icon: const Icon(Icons.favorite_border)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  await context.read<CartCubit>().addToCart(product.id, 1);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CartScreen()),
+                  );
+                },
+                icon: const Icon(Icons.shopping_bag),
+                label: const Text("Tambah Ke Keranjang"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Aliquam Molestie Lacinia Egestas. Nulla At Imperdiet Dolor, Vitae Accumsan Arcu.',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () {},
-                child: const Text("Read More"),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.favorite_border),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.shopping_bag),
-                    label: const Text("Tambah Ke Keranjang"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
+          ]),
+        ]),
       ),
     );
   }
