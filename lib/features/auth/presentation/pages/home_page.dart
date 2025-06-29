@@ -60,7 +60,7 @@ class HomePage extends StatelessWidget {
                 top: 4, // Menyesuaikan posisi vertikal gambar highlight
                 right: -30, // Menggeser lebih ke kiri
                 child: Text(
-                  "TOKAS",
+                  "TUKU NOW",
                   style: TextStyle(
                     color: Color.fromARGB(255, 98, 88, 88),
                     fontWeight: FontWeight.bold,

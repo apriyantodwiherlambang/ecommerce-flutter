@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 
 class WishlistPage extends StatelessWidget {
   final List<Map<String, dynamic>> items = [
-    {"title": "Nike Air Jordan 1", "price": "Rp.500.000"},
-    {"title": "Jaket Nat Geo", "price": "Rp.300.000"},
-    {"title": "Nike Air Jordan 1", "price": "Rp.500.000"},
-    {"title": "Jaket Nat Geo", "price": "Rp.300.000"},
-    {"title": "Nike Air Jordan 1", "price": "Rp.500.000"},
-    {"title": "Jaket Nat Geo", "price": "Rp.300.000"},
+    {"title": "Mouse Rubix One", "price": "Rp.200.000"},
+    {"title": "Keyboard AJAZZ AK80", "price": "Rp.320.000"},
+    {"title": "iPhone 13 Pro", "price": "Rp.15.000.000"},
+    {"title": "Macbook Pro M4", "price": "Rp.32.000.000"},
   ];
 
   @override
@@ -91,7 +89,7 @@ class WishlistCard extends StatelessWidget {
           SizedBox(height: 8),
           Center(
             child: Image.asset(
-              'assets/shoes.png',
+              'assets/TUKUNOW.png',
               height: 120, // ukuran gambar diperbesar
               fit: BoxFit.contain,
             ),

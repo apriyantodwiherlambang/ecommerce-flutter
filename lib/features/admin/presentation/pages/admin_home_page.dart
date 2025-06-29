@@ -66,7 +66,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
       backgroundColor: Colors.white,
       elevation: 0,
       title: const Text(
-        'TOKAS Admin',
+        'TUKU NOW Admin',
         style: TextStyle(
           color: Color.fromARGB(255, 98, 88, 88),
           fontWeight: FontWeight.bold,

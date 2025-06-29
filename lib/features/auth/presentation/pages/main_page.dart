@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend_ecommerce/features/auth/presentation/pages/user_home_page.dart';
 import 'package:frontend_ecommerce/features/auth/presentation/pages/whislist_page.dart';
-import 'package:frontend_ecommerce/features/products/presentation/cubit/product_upload_cubit.dart'
-    as Upload;
 import 'package:frontend_ecommerce/features/products/presentation/cubit/product_cubit.dart';
 import 'package:frontend_ecommerce/injection_container.dart' as di;
 
 import 'profile_page.dart';
 import 'cart_page.dart';
+import 'package:frontend_ecommerce/features/cart/cart_cubit.dart'; // Pastikan ini diimpor
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -20,28 +19,38 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
 
-  Widget _getPage(int index) {
-    switch (index) {
-      case 0:
-        return BlocProvider<ProductCubit>(
-          create: (_) => di.sl<ProductCubit>()..fetchProducts(),
-          child: const UserHomePage(),
-        );
-      case 1:
-        return CartScreen();
-      case 2:
-        return WishlistPage();
-      case 3:
-        return const ProfilePage();
-      default:
-        return const SizedBox.shrink();
+  // List of widgets to display for each tab.
+  // We initialize these once to avoid unnecessary widget recreation.
+  final List<Widget> _pages = [
+    BlocProvider<ProductCubit>(
+      create: (_) => di.sl<ProductCubit>()..fetchProducts(),
+      child: const UserHomePage(),
+    ),
+    // CartScreen does not need BlocProvider.value here as it's provided globally in main.dart's MultiBlocProvider.
+    CartScreen(),
+    WishlistPage(),
+    const ProfilePage(),
+  ];
+
+  // This method handles tab selection and triggers cart data refresh when the cart tab is opened.
+  void _onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+
+    // IMPORTANT: Trigger fetchCart() when the cart tab (index 1) is selected.
+    // This ensures the cart data is always up-to-date for the currently logged-in user.
+    if (index == 1) {
+      context.read<CartCubit>().fetchCart();
+      print(
+          'MainPage: fetchCart() triggered on Cart tab selection.'); // Debugging
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _getPage(_currentIndex),
+      body: _pages[_currentIndex], // Display the selected page from the list
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
         currentIndex: _currentIndex,
@@ -49,7 +58,7 @@ class _MainPageState extends State<MainPage> {
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: _onTabTapped, // Use the custom tab tap handler
         items: [
           BottomNavigationBarItem(
             icon: Transform.translate(

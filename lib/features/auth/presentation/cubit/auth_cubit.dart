@@ -241,12 +241,45 @@ class AuthCubit extends Cubit<AuthState> {
     return false;
   }
 
+  // String _parseError(dynamic error) {
+  //   if (error is DioError) {
+  //     return error.response?.data['message'] ??
+  //         error.response?.data['error'] ??
+  //         error.message;
+  //   }
+  //   return error.toString();
+  // }
+
   String _parseError(dynamic error) {
-    if (error is DioError) {
-      return error.response?.data['message'] ??
-          error.response?.data['error'] ??
-          error.message;
+    if (error is DioException) {
+      // Ganti DioError menjadi DioException (lebih modern)
+      final responseData = error.response?.data;
+
+      // Periksa jika responseData adalah Map (objek JSON)
+      if (responseData is Map<String, dynamic>) {
+        // Prioritaskan 'message', lalu 'error', atau pesan default
+        return responseData['message'] ??
+            responseData['error'] ??
+            error.message ?? // Fallback ke message dari DioException
+            'Terjadi kesalahan yang tidak diketahui dari server.';
+      }
+      // Periksa jika responseData adalah String (pesan sederhana)
+      else if (responseData is String) {
+        return responseData; // Langsung kembalikan string tersebut sebagai pesan error
+      }
+      // Periksa jika responseData adalah List (mungkin list error)
+      else if (responseData is List) {
+        if (responseData.isNotEmpty) {
+          // Ambil elemen pertama atau gabungkan semuanya
+          return responseData.first.toString();
+        }
+      }
+
+      // Jika tidak ada format yang dikenali, fallback ke message dari DioException
+      return error.message ??
+          'Terjadi kesalahan tidak dikenal saat memproses respon.';
     }
+    // Jika error bukan DioException, kembalikan representasi string-nya
     return error.toString();
   }
 

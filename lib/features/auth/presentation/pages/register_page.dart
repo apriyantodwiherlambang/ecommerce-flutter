@@ -68,7 +68,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                     const Text(
-                      'TOKAS',
+                      'TUKU NOW',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,

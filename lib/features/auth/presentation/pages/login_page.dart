@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend_ecommerce/features/cart/cart_cubit.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import './register_page.dart';
@@ -62,6 +63,12 @@ class _LoginPageState extends State<LoginPage> {
               SnackBar(content: Text(state.message)),
             );
 
+            // --- PERBAIKAN DI SINI ---
+            // Panggil fetchCart() setelah login berhasil
+            context.read<CartCubit>().fetchCart();
+            print('LoginPage: fetchCart() triggered after successful login.');
+            // --- AKHIR PERBAIKAN ---
+
             if (role.toLowerCase() == 'admin') {
               Navigator.pushReplacementNamed(context, '/admin-dashboard');
             } else {
@@ -89,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       const Text(
-                        'TOKAS',
+                        'TUKU NOW',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,

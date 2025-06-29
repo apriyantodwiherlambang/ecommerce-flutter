@@ -4,12 +4,19 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend_ecommerce/features/auth/presentation/pages/user_home_page.dart';
 import 'package:frontend_ecommerce/features/cart/cart_cubit.dart';
 import 'package:frontend_ecommerce/features/cart/cart_remote_datasource.dart';
+import 'package:frontend_ecommerce/features/notification/notification_service.dart';
+import 'package:frontend_ecommerce/features/payment/payment_success_model.dart';
 import 'package:frontend_ecommerce/features/products/presentation/pages/admin_upload_product_page.dart';
 
 import 'injection_container.dart' as di;
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/products/presentation/cubit/product_upload_cubit.dart';
 import 'features/categories/presentation/cubit/category_cubit.dart';
+
+// Import Cubit baru
+import 'features/order/order_cubit.dart';
+import 'features/payment/payment_cubit.dart';
+import 'features/payment/payment_success_screen.dart'; // Import PaymentSuccessScreen
 
 // Pages
 import 'features/auth/presentation/pages/login_page.dart';
@@ -62,6 +69,10 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (_) => di.sl<CartCubit>()..fetchCart(),
         ),
+        // --- TAMBAHKAN INI ---
+        BlocProvider(create: (_) => di.sl<PaymentCubit>()),
+        BlocProvider(create: (_) => di.sl<OrderCubit>()),
+        // --------------------
       ],
       child: MaterialApp(
         title: 'Ecommerce App',
@@ -74,6 +85,7 @@ class MyApp extends StatelessWidget {
           '/': (context) => const LoginPage(),
           '/register': (context) => const RegisterPage(),
           '/main': (_) => const MainPage(),
+          // '/user-home': (_) => const UserHomePage(),
           '/user-home': (_) => BlocProvider<ProductCubit>(
                 create: (_) => di.sl<ProductCubit>(),
                 child: const UserHomePage(),
@@ -85,15 +97,24 @@ class MyApp extends StatelessWidget {
                 value: di.sl<CartCubit>(),
                 child: CartScreen(),
               ),
-
           '/detail-product-page': (context) {
             final product = ModalRoute.of(context)!.settings.arguments;
-            return ProductDetailPage(product: product);
+            return BlocProvider.value(
+              // Tambahkan BlocProvider.value untuk CartCubit
+              value: di.sl<CartCubit>(),
+              child: ProductDetailPage(product: product),
+            );
           },
           '/whislist-page': (context) => WishlistPage(),
           '/forgot-password': (context) => const ForgotPasswordPage(),
           '/admin-upload-product': (_) =>
               const AdminUploadProductPage(), // <- Tambahkan halaman ini
+          '/payment-success': (context) {
+            final paymentDetails = ModalRoute.of(context)!.settings.arguments
+                as PaymentSuccessModel;
+            return PaymentSuccessScreen(paymentDetails: paymentDetails);
+          },
+          '/notification-page': (context) => const NotificationPage(),
         },
       ),
     );

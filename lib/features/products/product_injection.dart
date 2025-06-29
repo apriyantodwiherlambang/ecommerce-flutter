@@ -50,9 +50,6 @@ void initProductInjection() {
   sl.registerLazySingleton<UploadProduct>(
     () => UploadProduct(sl<ProductsRepository>()),
   );
-  // sl.registerLazySingleton<FetchProductsUseCase>(
-  //   () => FetchProductsUseCase(sl<ProductsRepository>()),
-  // );
 
   if (!sl.isRegistered<FetchProductsUseCase>()) {
     sl.registerLazySingleton<FetchProductsUseCase>(

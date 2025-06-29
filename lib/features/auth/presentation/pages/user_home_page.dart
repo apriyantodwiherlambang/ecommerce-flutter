@@ -76,7 +76,7 @@ class _UserHomePageState extends State<UserHomePage> {
       backgroundColor: Colors.white,
       elevation: 0,
       title: const Text(
-        'TOKAS',
+        'TUKU NOW',
         style: TextStyle(
           color: Color.fromARGB(255, 98, 88, 88),
           fontWeight: FontWeight.bold,
